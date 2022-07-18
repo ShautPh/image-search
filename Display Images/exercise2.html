@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Vue.JS Chapter 4 | Practice | exercise 2</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="exercise2.css" />
+    </head>
+    <body>
+        <div id="app">
+            <div class="search-container mt-2">
+                <input id="search" type="text" placeholder="search your favorite images" class="form-control" v-model="query" @keyup.enter="fetchImages">
+                <button class="btn btn-primary " @click="fetchImages">Search</button>
+                <button class="btn btn-danger " @click="clearSearch"><img src="images/cancel.png" alt=""></button>
+            </div>
+            <div class="container" v-if="images.length == 0">
+                <h2>No Result</h2>
+            </div>
+            <!-- Container for result of queries -->
+            <div class="container-fluid">
+                <div class='card' v-for="image in images" :id="image.id">
+                    <img class='img' :src="image.largeImageURL" @click="viewImage(image.id)">
+                </div>
+            </div>
+
+            <div class="display_image" v-if="isView">
+                <!-- <button class="btn btn-primary" @click="back">X</button> -->
+                <div class="cancel-icon" @click="back">
+                    <img src="images/cancel.png" alt=""  id="cancel" >
+                </div>
+                <div class="container_image">
+                    <div class="back-image"  @click="previousImage" @keyup.left="previousImage">
+                        <img src="images/previous.png" alt="">
+                    </div>
+                    <div class="view_image" >
+                        <img :src="images[index].largeImageURL" alt="images[index].largeImageURL" width="100%">
+                    </div>
+                    <div class="next-image" @click="nextImage" @keyup.right="nextImage">
+                        <img src="images/next.png" alt="" >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue@next" ></script>
+    <script>
+        var app = Vue.createApp({
+            data() {
+            // YOUR CODE HERE
+            return{
+                api_key: '14001068-da63091f2a2cb98e1d7cc1d82',
+                api_base: 'https://pixabay.com/api/?',
+                images: [],
+                query: "",
+                isView: false,
+                index: 0,
+            }
+            },
+            methods : {
+            // YOUR CODE HERE
+                fetchImages(){
+                    if (this.query != null){
+                        axios.get(this.api_base + "key=" + this.api_key   + "&q="+ this.query).then((res)=>{
+                            this.images = res.data.hits;
+                        })
+                        localStorage.setItem('key_search',JSON.stringify(this.query));
+                    }
+                },
+                clearSearch(){
+                    this.images = [];
+                    this.query = "";
+                    localStorage.removeItem("key_search")
+                },
+                viewImage(id){
+                    console.log(id);
+                    for(let i = 0; i<this.images.length; i++){
+                        if (this.images[i].id == id){
+                            console.log(this.images[i].previewURL);
+                            this.index = i;
+                        }
+                    }
+                    this.isView = true;
+                },
+                back(){
+                    this.isView = false;
+                },
+                previousImage(){
+                    if(this.index > 0){
+                        this.index -= 1;
+                    }
+                },
+                nextImage(){
+                    if (this.index < this.images.length-1){
+                        this.index += 1;
+                    }
+                }
+            },
+            mounted(){
+                if (this.query != null){
+                    this.query = JSON.parse(localStorage.getItem('key_search'));
+                }
+                return this. fetchImages();
+            },
+        })
+        app.mount("#app")
+    </script>
+
+</html>
